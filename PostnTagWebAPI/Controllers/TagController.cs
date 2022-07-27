@@ -53,13 +53,6 @@ namespace PostnTagWebAPI.Controllers
         [ProducesResponseType(204)]
         public IActionResult GetTagByLabel(string label)
         {
-            //var tag = _mapper.Map<TagDto>(_tagRepository.GetTag(label));
-
-            //if (!ModelState.IsValid)
-            //    return BadRequest(ModelState);
-
-            //return Ok(tag);
-
             var tag = _mapper.Map<List<TagDto>>(
                 _tagRepository.GetTagByLabel(label));
 

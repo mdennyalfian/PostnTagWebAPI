@@ -57,7 +57,24 @@ namespace PostnTagWebAPI.Controllers
 
         public IActionResult GetPostByTitle(string title)
         {
-            var posts = _mapper.Map<PostDto>(_postrepository.GetPost(title));
+            var posts = _mapper.Map<List<PostDto>>(
+                _postrepository.GetPostByTitle(title));
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(posts);
+        }
+
+        [HttpGet("content/{content}")]
+        [ProducesResponseType(200, Type = typeof(Post))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+
+        public IActionResult GetPostByContent(string content)
+        {
+            var posts = _mapper.Map<List<PostDto>>(
+                _postrepository.GetPostByContent(content));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -88,7 +105,7 @@ namespace PostnTagWebAPI.Controllers
             if (postCreate == null)
                 return BadRequest(ModelState);
 
-            var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Trim().ToUpper() == postCreate.Title.TrimEnd().ToUpper());
+            var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == postCreate.Title.Replace(" ", string.Empty).ToUpper());
 
             if (!_tagRepository.TagExists(tagId))
                 return NotFound();
@@ -117,8 +134,7 @@ namespace PostnTagWebAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdatePost(int postId,
-            [FromQuery] int tagId, [FromBody] PostDtoCreate updatedPost)
+        public IActionResult UpdatePost(int postId, [FromBody] PostDtoCreate updatedPost)
         {
             if (updatedPost == null)
                 return BadRequest(ModelState);
@@ -126,12 +142,20 @@ namespace PostnTagWebAPI.Controllers
             if (!_postrepository.PostExists(postId))
                 return NotFound();
 
+            var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == updatedPost.Title.Replace(" ", string.Empty).ToUpper());
+
+            if (posts != null)
+            {
+                ModelState.AddModelError("", "Title already exists");
+                return StatusCode(422, ModelState);
+            }                       
+
             if (!ModelState.IsValid)
                 return BadRequest();
 
             var postMap = _mapper.Map<Post>(updatedPost);
 
-            if (!_postrepository.UpdatePost(postId, tagId, postMap))
+            if (!_postrepository.UpdatePost(postId, postMap))
             {
                 ModelState.AddModelError("", "Something went wrong updating Post");
                 return StatusCode(500, ModelState);

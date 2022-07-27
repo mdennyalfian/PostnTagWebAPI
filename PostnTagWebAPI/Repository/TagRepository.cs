@@ -42,17 +42,10 @@ namespace PostnTagWebAPI.Repository
             return _context.Tags.Where(e => e.Id == id).FirstOrDefault();
         }
 
-        public Tag GetTag(string label)
-        {
-            return _context.Tags.Where(p => p.Label == label).FirstOrDefault();
-        }
-
         public ICollection<Tag> GetTagByLabel(string label)
         {
             string pattern = $"%{label}%";
-            return _context.Tags.Where(c => EF.Functions.Like(c.Label, pattern)).ToList(); // Version B
-
-            //return _context.Tags.Where(e => e.Label == label).ToList();
+            return _context.Tags.Where(c => EF.Functions.Like(c.Label, pattern)).ToList();
         }
 
         public ICollection<Post> GetPostByTagId(int tagId)

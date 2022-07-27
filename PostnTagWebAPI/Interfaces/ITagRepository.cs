@@ -6,7 +6,6 @@ namespace PostnTagWebAPI.Interfaces
     {
         ICollection<Tag> GetTags();
         Tag GetTag(int id);
-        Tag GetTag(string label);
         ICollection<Tag> GetTagByLabel(string label);
         ICollection<Post> GetPostByTagId(int tagId);
         bool TagExists(int id);

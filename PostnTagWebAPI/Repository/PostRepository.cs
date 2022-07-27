@@ -1,4 +1,5 @@
-﻿using PostnTagWebAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PostnTagWebAPI.Data;
 using PostnTagWebAPI.Interfaces;
 using PostnTagWebAPI.Models;
 
@@ -45,45 +46,30 @@ namespace PostnTagWebAPI.Repository
             return _context.Posts.Where(p => p.Id == id).FirstOrDefault();
         }
 
-        public Post GetPost(string title)
+        public ICollection<Post> GetPostByTitle(string title)
         {
-            return _context.Posts.Where(p => p.Title == title).FirstOrDefault();
-        }        
+            string pattern = $"%{title}%";
+            return _context.Posts.Where(c => EF.Functions.Like(c.Title, pattern)).ToList();
+        }
+
+        public ICollection<Post> GetPostByContent(string content)
+        {
+            string pattern = $"%{content}%";
+            return _context.Posts.Where(c => EF.Functions.Like(c.Content, pattern)).ToList();
+        }
 
         public ICollection<Tag> GetTagByPostId(int postId)
         {
             return _context.PostTags.Where(e => e.PostId == postId).Select(c => c.Tag).ToList();
         }
 
-        public bool UpdatePost(int postId, int tagId, Post post)
+        public bool UpdatePost(int postId, Post post)
         {
-            //var postNew = new Post()
-            //{
-            //    Id = postId,
-            //    Title = post.Title,
-            //    Content = post.Content,
-            //};
+            var updatePost = _context.Posts.First(b => b.Id == postId);
+            updatePost.Title = post.Title;
+            updatePost.Content = post.Content;
 
-            var postNew = _context.Posts.Where(a => a.Id == postId).FirstOrDefault();
-
-            if (postId > 0)
-            {
-                if (postNew != null)
-                {
-                    postNew.Title = post.Title;
-                    postNew.Content = post.Content;
-                }
-            }
-                       
-
-            if (tagId > 0)
-            {
-                var tag = _context.Tags.Where(a => a.Id == tagId).FirstOrDefault();
-                var postTag = _context.PostTags.Where(a => a.PostId == postId).FirstOrDefault();
-                postTag.Post = postNew;
-                postTag.Tag = tag;
-            }            
-            return Save();
+            return Save();          
         }
 
         public bool DeletePost(Post post)
@@ -96,8 +82,6 @@ namespace PostnTagWebAPI.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
-        }
-
-        
+        }        
     }
 }
