@@ -47,7 +47,7 @@ namespace PostnTagWebAPI.Controllers
             return Ok(tag);
         }
 
-        [HttpGet("label{label}")]
+        [HttpGet("label/{label}")]
         [ProducesResponseType(200, Type = typeof(Tag))]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
