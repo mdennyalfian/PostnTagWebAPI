@@ -36,6 +36,65 @@ namespace PostnTagWebAPI.Repository
             return Save();
         }
 
+        public bool CreateNewPost(Post post)
+        {
+            var postlist = post.Tags.ToList();
+
+            //var getpost = new Post()
+            //{
+            //    Id = post.Id,
+            //    Title = post.Title,
+            //    Content = post.Content,
+            //    Tags = post.Tags,
+            //    PostTags = post.PostTags
+            //};
+
+            //var getpostlist = getpost.Tags.ToList();
+
+            //foreach (var getlabel in getpostlist)
+            //{
+            //    var existTag = _context.Tags.Any(c => c.Label.Replace(" ", string.Empty).ToUpper() == getlabel.Label.Replace(" ", string.Empty).ToUpper());
+
+            //    if(existTag)
+            //    {
+            //        getpost.Tags.Remove(getlabel);
+            //    }
+            //}
+
+            _context.Add(post);
+            _context.SaveChanges();
+
+            foreach (var labels in postlist)
+            {               
+                var tag = _context.Tags.Where(s => s.Label == labels.Label.ToString()).FirstOrDefault();
+
+                var postTag = new PostTag()
+                {
+                    Tag = tag,
+                    Post = post,
+                };
+
+                _context.Add(postTag);
+                _context.SaveChanges();
+            }
+
+            return true;
+        }
+
+        public IQueryable GetAllPosts()
+        {
+            var data = _context.Posts.Include(x => x.PostTags).ThenInclude(x => x.Tag)
+                .Select(x => new
+                {
+                    PostId = x.Id,
+                    Title = x.Title,
+                    Content = x.Content,
+                    Tags = x.PostTags.Select(k => k.Tag.Label).ToList()
+                });
+
+            return data;
+        }
+
         public ICollection<Post> GetPosts()
         {
             return _context.Posts.OrderBy(p => p.Id).ToList();

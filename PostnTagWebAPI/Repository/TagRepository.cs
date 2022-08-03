@@ -19,6 +19,11 @@ namespace PostnTagWebAPI.Repository
             return _context.Tags.Any(c => c.Id == id);
         }
 
+        public bool TagExistsLabel(string label)
+        {
+            return _context.Tags.Any(c => c.Label.Replace(" ", string.Empty).ToUpper() == label.Replace(" ", string.Empty).ToUpper());
+        }
+
         public bool CreateTag(Tag tag)
         {
             var getlabel = tag.Label.Replace(" ", String.Empty);
@@ -73,6 +78,7 @@ namespace PostnTagWebAPI.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
-        }        
+        }
+        
     }
 }

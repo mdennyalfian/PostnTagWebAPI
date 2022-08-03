@@ -14,6 +14,8 @@ namespace PostnTagWebAPI.Helper
             CreateMap<TagDto, Tag>();
             CreateMap<Post, PostDtoCreate>();
             CreateMap<PostDtoCreate, Post>();
+            CreateMap<Post, PostDtoUpdate>();
+            CreateMap<PostDtoUpdate, Post>();
             CreateMap<Tag, TagDtoCreate>();
             CreateMap<TagDtoCreate, Tag>();
         }        

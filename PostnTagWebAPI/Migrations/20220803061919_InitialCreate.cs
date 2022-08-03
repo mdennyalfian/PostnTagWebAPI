@@ -28,11 +28,17 @@ namespace PostnTagWebAPI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Label = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Label = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tags_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -63,6 +69,11 @@ namespace PostnTagWebAPI.Migrations
                 name: "IX_PostTags_TagId",
                 table: "PostTags",
                 column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_PostId",
+                table: "Tags",
+                column: "PostId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -71,10 +82,10 @@ namespace PostnTagWebAPI.Migrations
                 name: "PostTags");
 
             migrationBuilder.DropTable(
-                name: "Posts");
+                name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "Posts");
         }
     }
 }

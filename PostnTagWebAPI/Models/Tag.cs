@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization;
-
+﻿
 namespace PostnTagWebAPI.Models
 {
     public class Tag

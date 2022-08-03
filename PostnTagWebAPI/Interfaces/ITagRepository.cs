@@ -9,6 +9,7 @@ namespace PostnTagWebAPI.Interfaces
         ICollection<Tag> GetTagByLabel(string label);
         ICollection<Post> GetPostByTagId(int tagId);
         bool TagExists(int id);
+        bool TagExistsLabel(string label);
         bool CreateTag(Tag tag);
         bool UpdateTag(int tagId, Tag tag);
         bool DeleteTag(Tag tag);

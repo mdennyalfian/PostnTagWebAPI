@@ -23,15 +23,25 @@ namespace PostnTagWebAPI.Controllers
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Post>))]
-        public IActionResult GetPosts()
+        public IActionResult GetAllPosts()
         {
-            var posts = _mapper.Map<List<PostDto>>(_postrepository.GetPosts());
+            var posts = _postrepository.GetAllPosts();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             return Ok(posts);
         }
+
+        //public IActionResult GetPosts()
+        //{
+        //    var posts = _mapper.Map<List<PostDto>>(_postrepository.GetPosts());
+
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    return Ok(posts);
+        //}
 
         [HttpGet("id/{postId}")]
         [ProducesResponseType(200, Type = typeof(Post))]
@@ -100,15 +110,12 @@ namespace PostnTagWebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreatePost([FromQuery] int tagId, [FromBody] PostDtoCreate postCreate)
+        public IActionResult CreatePost([FromBody] PostDtoCreate postCreate)
         {
             if (postCreate == null)
                 return BadRequest(ModelState);
 
             var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == postCreate.Title.Replace(" ", string.Empty).ToUpper());
-
-            if (!_tagRepository.TagExists(tagId))
-                return NotFound();
 
             if (posts != null)
             {
@@ -119,9 +126,27 @@ namespace PostnTagWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            //var getTagList = postCreate.Tags.ToList();
+
+            //foreach (var label in getTagList)
+            //{
+            //    try
+            //    {
+            //        if (_tagRepository.TagExistsLabel(label.Label.ToString()))
+            //        {
+            //            postCreate.Tags.Remove(label);
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ModelState.AddModelError("", ex.Message.ToString());
+            //        return StatusCode(500, ModelState);
+            //    }
+            //}
+
             var postMap = _mapper.Map<Post>(postCreate);
 
-            if (!_postrepository.CreatePost(tagId, postMap))
+            if (!_postrepository.CreateNewPost(postMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
@@ -129,6 +154,39 @@ namespace PostnTagWebAPI.Controllers
 
             return Ok("Successfully created");
         }
+
+        //[HttpPost]
+        //[ProducesResponseType(204)]
+        //[ProducesResponseType(400)]
+        //public IActionResult CreatePost([FromQuery] int tagId, [FromBody] PostDtoCreate postCreate)
+        //{
+        //    if (postCreate == null)
+        //        return BadRequest(ModelState);
+
+        //    var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == postCreate.Title.Replace(" ", string.Empty).ToUpper());
+
+        //    if (!_tagRepository.TagExists(tagId))
+        //        return NotFound();
+
+        //    if (posts != null)
+        //    {
+        //        ModelState.AddModelError("", "Title already exists");
+        //        return StatusCode(422, ModelState);
+        //    }
+
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    var postMap = _mapper.Map<Post>(postCreate);
+
+        //    if (!_postrepository.CreatePost(tagId, postMap))
+        //    {
+        //        ModelState.AddModelError("", "Something went wrong while saving");
+        //        return StatusCode(500, ModelState);
+        //    }
+
+        //    return Ok("Successfully created");
+        //}
 
         [HttpPut("{postId}")]
         [ProducesResponseType(400)]

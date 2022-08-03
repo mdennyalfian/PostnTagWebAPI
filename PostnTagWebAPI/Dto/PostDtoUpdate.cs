@@ -1,9 +1,8 @@
 ﻿namespace PostnTagWebAPI.Dto
 {
-    public class PostDtoCreate
+    public class PostDtoUpdate
     {
         public string Title { get; set; }
         public string Content { get; set; }
-        public List<TagDtoCreate> Tags { get; set; }
     }
 }
