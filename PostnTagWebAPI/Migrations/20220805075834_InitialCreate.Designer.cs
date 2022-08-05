@@ -12,7 +12,7 @@ using PostnTagWebAPI.Data;
 namespace PostnTagWebAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220803061919_InitialCreate")]
+    [Migration("20220805075834_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

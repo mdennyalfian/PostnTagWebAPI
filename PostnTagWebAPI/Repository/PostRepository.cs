@@ -19,68 +19,6 @@ namespace PostnTagWebAPI.Repository
             return _context.Posts.Any(p => p.Id == postId);
         }
 
-        public bool CreatePost(int tagId, Post post)
-        {
-            var tag = _context.Tags.Where(a => a.Id == tagId).FirstOrDefault();
-
-            var postTag = new PostTag()
-            {
-                Tag = tag,
-                Post = post,
-            };
-
-            _context.Add(postTag);
-
-            _context.Add(post);
-
-            return Save();
-        }
-
-        public bool CreateNewPost(Post post)
-        {
-            var postlist = post.Tags.ToList();
-
-            //var getpost = new Post()
-            //{
-            //    Id = post.Id,
-            //    Title = post.Title,
-            //    Content = post.Content,
-            //    Tags = post.Tags,
-            //    PostTags = post.PostTags
-            //};
-
-            //var getpostlist = getpost.Tags.ToList();
-
-            //foreach (var getlabel in getpostlist)
-            //{
-            //    var existTag = _context.Tags.Any(c => c.Label.Replace(" ", string.Empty).ToUpper() == getlabel.Label.Replace(" ", string.Empty).ToUpper());
-
-            //    if(existTag)
-            //    {
-            //        getpost.Tags.Remove(getlabel);
-            //    }
-            //}
-
-            _context.Add(post);
-            _context.SaveChanges();
-
-            foreach (var labels in postlist)
-            {               
-                var tag = _context.Tags.Where(s => s.Label == labels.Label.ToString()).FirstOrDefault();
-
-                var postTag = new PostTag()
-                {
-                    Tag = tag,
-                    Post = post,
-                };
-
-                _context.Add(postTag);
-                _context.SaveChanges();
-            }
-
-            return true;
-        }
-
         public IQueryable GetAllPosts()
         {
             var data = _context.Posts.Include(x => x.PostTags).ThenInclude(x => x.Tag)
@@ -122,11 +60,96 @@ namespace PostnTagWebAPI.Repository
             return _context.PostTags.Where(e => e.PostId == postId).Select(c => c.Tag).ToList();
         }
 
+        public bool CreatePost(int tagId, Post post)
+        {
+            var tag = _context.Tags.Where(a => a.Id == tagId).FirstOrDefault();
+
+            var postTag = new PostTag()
+            {
+                Tag = tag,
+                Post = post,
+            };
+
+            _context.Add(postTag);
+
+            _context.Add(post);
+
+            return Save();
+        }
+
+        public bool CreateNewPost(Post post)
+        {
+            var postlist = post.Tags.ToList();
+
+            _context.Add(post);
+            _context.SaveChanges();
+
+            foreach (var labels in postlist)
+            {               
+                var tag = _context.Tags.Where(s => s.Label == labels.Label.ToString()).FirstOrDefault();
+
+                var postTag = new PostTag()
+                {
+                    Tag = tag,
+                    Post = post,
+                };
+
+                _context.Add(postTag);
+
+                var existTag = _context.Tags.Any(c => c.Label.Replace(" ", string.Empty).ToUpper() == labels.Label.Replace(" ", string.Empty).ToUpper());
+
+                if (existTag)
+                {
+                    var deletedTagsList = _context.Tags.Where(s => s.Label == labels.Label.ToString()).ToList();
+                    var deletedTags = _context.Tags.Where(s => s.Label == labels.Label.ToString()).OrderByDescending(p => p.Id).FirstOrDefault();
+                    
+                    if (deletedTags != null && deletedTagsList.Count > 1)
+                    {
+                        _context.Tags.Remove(deletedTags);
+                    }                    
+                }
+            }
+
+            return Save();
+        }        
+
         public bool UpdatePost(int postId, Post post)
         {
             var updatePost = _context.Posts.First(b => b.Id == postId);
             updatePost.Title = post.Title;
             updatePost.Content = post.Content;
+            updatePost.Tags = post.Tags;
+            updatePost.PostTags = post.PostTags;
+
+            _context.SaveChanges();
+
+            var updatePostList = post.Tags.ToList();
+
+            foreach (var labels in updatePostList)
+            {
+                var tag = _context.Tags.Where(s => s.Label == labels.Label.ToString()).FirstOrDefault();
+
+                var postTag = new PostTag()
+                {
+                    Tag = tag,
+                    Post = updatePost,
+                };
+
+                _context.Update(postTag);
+
+                var existTag = _context.Tags.Any(c => c.Label.Replace(" ", string.Empty).ToUpper() == labels.Label.Replace(" ", string.Empty).ToUpper());
+
+                if (existTag)
+                {
+                    var deletedTagsList = _context.Tags.Where(s => s.Label == labels.Label.ToString()).ToList();
+                    var deletedTags = _context.Tags.Where(s => s.Label == labels.Label.ToString()).OrderByDescending(p => p.Id).FirstOrDefault();
+
+                    if (deletedTags != null && deletedTagsList.Count > 1)
+                    {
+                        _context.Tags.Remove(deletedTags);
+                    }
+                }
+            }
 
             return Save();          
         }
