@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using PostnTagWebAPI.Dto;
 using PostnTagWebAPI.Interfaces;
 using PostnTagWebAPI.Models;
@@ -13,12 +14,14 @@ namespace PostnTagWebAPI.Controllers
         private readonly IPostRepository _postrepository;
         private readonly IMapper _mapper;
         private readonly ITagRepository _tagRepository;
+        private readonly IConfiguration _configuration;
 
-        public PostController(IPostRepository postrepository, IMapper mapper, ITagRepository tagRepository)
+        public PostController(IPostRepository postrepository, IMapper mapper, ITagRepository tagRepository, IConfiguration configuration)
         {
             _postrepository = postrepository;
             _mapper = mapper;
             _tagRepository = tagRepository;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -139,13 +142,13 @@ namespace PostnTagWebAPI.Controllers
             if (!_postrepository.PostExists(postId))
                 return NotFound();
 
-            var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == updatedPost.Title.Replace(" ", string.Empty).ToUpper());
+            //var posts = _postrepository.GetPosts().FirstOrDefault(c => c.Title.Replace(" ", string.Empty).ToUpper() == updatedPost.Title.Replace(" ", string.Empty).ToUpper());
 
-            if (posts != null)
-            {
-                ModelState.AddModelError("", "Title already exists");
-                return StatusCode(422, ModelState);
-            }                       
+            //if (posts != null)
+            //{
+            //    ModelState.AddModelError("", "Title already exists");
+            //    return StatusCode(422, ModelState);
+            //}                       
 
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -175,6 +178,17 @@ namespace PostnTagWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var connectionString = _configuration["ConnectionStrings:DefaultConnection"];
+
+            string commandText = $"Update Tags set PostId=null where PostId={postId}";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand cmd = new SqlCommand(commandText, conn))
+            {
+                conn.Open();
+                cmd.ExecuteNonQuery();
+                conn?.Close();
+            }
 
             if (!_postrepository.DeletePost(postToDelete))
             {
